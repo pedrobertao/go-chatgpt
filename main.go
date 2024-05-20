@@ -25,6 +25,8 @@ func main() {
 
 	if res.Code == 200 {
 		fmt.Printf(res.Body.Choices[0].Message.Content + "\n")
+		//Hello! I'm just a computer program, so I don't have feelings,
+		//but I'm here to help you. How can I assist you today?
 	}
 
 	os.Exit(0)

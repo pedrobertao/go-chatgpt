@@ -1,4 +1,4 @@
-package actions
+package chat
 
 import (
 	"bytes"
@@ -14,10 +14,16 @@ type Response struct {
 	Error error
 }
 
-func (m *ChatGPT) SayHello() (*Response, error) {
+type ChatGPT struct {
+	BaseURI string
+	ApiKey  string
+	Model   string
+}
+
+func (c *ChatGPT) SayHello() (*Response, error) {
 	url := fmt.Sprintf("%s%s", API_V1_URL, "/chat/completions")
 	data := map[string]interface{}{
-		"model": m.Model,
+		"model": c.Model,
 		"messages": []map[string]string{
 			{"role": "user", "content": "Hello, how are you?"},
 		},
@@ -38,7 +44,7 @@ func (m *ChatGPT) SayHello() (*Response, error) {
 
 	// Set the content type to application/json
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", "Bearer "+m.ApiKey)
+	req.Header.Set("Authorization", "Bearer "+c.ApiKey)
 	// Perform the request
 	client := &http.Client{}
 	response, err := client.Do(req)

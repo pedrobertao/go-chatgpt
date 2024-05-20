@@ -1,14 +1,8 @@
-package actions
+package chat
 
 const (
 	API_V1_URL string = "https://api.openai.com/v1"
 )
-
-type ChatGPT struct {
-	BaseURI string
-	ApiKey  string
-	Model   string
-}
 
 type ResponseBody struct {
 	ID      string `json:"id"`
