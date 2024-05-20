@@ -1,4 +1,4 @@
-package handlers
+package actions
 
 import (
 	"bytes"
@@ -9,52 +9,60 @@ import (
 )
 
 type Response struct {
-	Body  string
+	Body  ResponseBody
 	Code  int
 	Error error
 }
 
-func POST[P any](url string, data P) *Response {
-	// Convert the data to JSON
+func (m *ChatGPT) SayHello() (*Response, error) {
+	url := fmt.Sprintf("%s%s", API_V1_URL, "/chat/completions")
+	data := map[string]interface{}{
+		"model": m.Model,
+		"messages": []map[string]string{
+			{"role": "user", "content": "Hello, how are you?"},
+		},
+	}
+
 	jsonData, err := json.Marshal(data)
 	if err != nil {
 		fmt.Println("Error marshaling JSON:", err)
-		return &Response{}
+		return &Response{}, nil
 	}
 
 	// Create a new POST request with the JSON data
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
 	if err != nil {
 		fmt.Println("Error creating request:", err)
-		return &Response{}
+		return &Response{}, nil
 	}
 
 	// Set the content type to application/json
 	req.Header.Set("Content-Type", "application/json")
-
+	req.Header.Set("Authorization", "Bearer "+m.ApiKey)
 	// Perform the request
 	client := &http.Client{}
-	resp, err := client.Do(req)
+	response, err := client.Do(req)
 	if err != nil {
 		fmt.Println("Error making request:", err)
-		return &Response{}
+		return &Response{}, nil
 	}
-	defer resp.Body.Close()
+	defer response.Body.Close()
 
 	// Read the response body
-	body, err := io.ReadAll(resp.Body)
+	body, err := io.ReadAll(response.Body)
 	if err != nil {
 		fmt.Println("Error reading response body:", err)
-		return &Response{}
+		return &Response{}, nil
 	}
 
-	// Print the response status and body
-	fmt.Println("Response Status:", resp.Status)
-	fmt.Println("Response Body:", string(body))
+	var responseBody ResponseBody
 
+	if err := json.Unmarshal(body, &responseBody); err != nil {
+		return &Response{}, err
+	}
 	return &Response{
-		Body:  string(body),
-		Code:  resp.StatusCode,
+		Body:  responseBody,
+		Code:  response.StatusCode,
 		Error: nil,
-	}
+	}, nil
 }
