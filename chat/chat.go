@@ -8,19 +8,36 @@ import (
 	"net/http"
 )
 
-type Response struct {
-	Body  ResponseBody
-	Code  int
-	Error error
-}
-
 type ChatGPT struct {
-	BaseURI string
+	BaseURI URLVersion
 	ApiKey  string
-	Model   string
+	Model   Models
 }
 
-func (c *ChatGPT) SayHello() (*Response, error) {
+func (c ChatGPT) check() error {
+	if c.ApiKey == "" || c.BaseURI == "" || c.Model == "" {
+		return fmt.Errorf("package not initialize correctly")
+	}
+	return nil
+}
+
+func (c *ChatGPT) New(apiKey string, model Models, urlVersion URLVersion) {
+	c.BaseURI = API_V1_URL
+	c.ApiKey = apiKey
+	c.Model = model
+}
+
+func (c *ChatGPT) NewFree(apiKey string) {
+	c.BaseURI = API_V1_URL
+	c.ApiKey = apiKey
+	c.Model = GPT_35_TURBO
+}
+
+func (c *ChatGPT) SayHello() (*DefaultResponse, error) {
+	if err := c.check(); err != nil {
+		return nil, err
+	}
+
 	url := fmt.Sprintf("%s%s", API_V1_URL, "/chat/completions")
 	data := map[string]interface{}{
 		"model": c.Model,
@@ -32,14 +49,14 @@ func (c *ChatGPT) SayHello() (*Response, error) {
 	jsonData, err := json.Marshal(data)
 	if err != nil {
 		fmt.Println("Error marshaling JSON:", err)
-		return &Response{}, nil
+		return nil, nil
 	}
 
 	// Create a new POST request with the JSON data
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
 	if err != nil {
 		fmt.Println("Error creating request:", err)
-		return &Response{}, nil
+		return nil, nil
 	}
 
 	// Set the content type to application/json
@@ -50,7 +67,7 @@ func (c *ChatGPT) SayHello() (*Response, error) {
 	response, err := client.Do(req)
 	if err != nil {
 		fmt.Println("Error making request:", err)
-		return &Response{}, nil
+		return nil, nil
 	}
 	defer response.Body.Close()
 
@@ -58,15 +75,15 @@ func (c *ChatGPT) SayHello() (*Response, error) {
 	body, err := io.ReadAll(response.Body)
 	if err != nil {
 		fmt.Println("Error reading response body:", err)
-		return &Response{}, nil
+		return nil, nil
 	}
 
-	var responseBody ResponseBody
+	var responseBody DefaultResponseBody
 
 	if err := json.Unmarshal(body, &responseBody); err != nil {
-		return &Response{}, err
+		return nil, err
 	}
-	return &Response{
+	return &DefaultResponse{
 		Body:  responseBody,
 		Code:  response.StatusCode,
 		Error: nil,

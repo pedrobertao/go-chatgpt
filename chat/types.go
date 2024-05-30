@@ -1,10 +1,12 @@
 package chat
 
-const (
-	API_V1_URL string = "https://api.openai.com/v1"
-)
+type DefaultResponse struct {
+	Body  DefaultResponseBody
+	Code  int
+	Error error
+}
 
-type ResponseBody struct {
+type DefaultResponseBody struct {
 	ID      string `json:"id"`
 	Object  string `json:"object"`
 	Created int    `json:"created"`
