@@ -1,11 +1,8 @@
 package chat
 
 import (
-	"bytes"
-	"encoding/json"
+	"errors"
 	"fmt"
-	"io"
-	"net/http"
 )
 
 type ChatGPT struct {
@@ -33,59 +30,23 @@ func (c *ChatGPT) NewFree(apiKey string) {
 	c.Model = GPT_35_TURBO
 }
 
-func (c *ChatGPT) SayHello() (*DefaultResponse, error) {
+func (c *ChatGPT) SayHello() (string, error) {
 	if err := c.check(); err != nil {
-		return nil, err
+		return "", err
 	}
 
-	url := fmt.Sprintf("%s%s", API_V1_URL, "/chat/completions")
-	data := map[string]interface{}{
-		"model": c.Model,
-		"messages": []map[string]string{
-			{"role": "user", "content": "Hello, how are you?"},
-		},
-	}
-
-	jsonData, err := json.Marshal(data)
+	res, err := c.Post("Hello, how are you ?", GPT_35_TURBO)
 	if err != nil {
-		fmt.Println("Error marshaling JSON:", err)
-		return nil, nil
+		return "", err
+	}
+	if res.Code != 200 {
+		return "", errors.New("failed to call api")
 	}
 
-	// Create a new POST request with the JSON data
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
-	if err != nil {
-		fmt.Println("Error creating request:", err)
-		return nil, nil
+	if len(res.Body.Choices) > 0 {
+		strRe := fmt.Sprintf(res.Body.Choices[0].Message.Content + "\n")
+		return strRe, nil
 	}
 
-	// Set the content type to application/json
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", "Bearer "+c.ApiKey)
-	// Perform the request
-	client := &http.Client{}
-	response, err := client.Do(req)
-	if err != nil {
-		fmt.Println("Error making request:", err)
-		return nil, nil
-	}
-	defer response.Body.Close()
-
-	// Read the response body
-	body, err := io.ReadAll(response.Body)
-	if err != nil {
-		fmt.Println("Error reading response body:", err)
-		return nil, nil
-	}
-
-	var responseBody DefaultResponseBody
-
-	if err := json.Unmarshal(body, &responseBody); err != nil {
-		return nil, err
-	}
-	return &DefaultResponse{
-		Body:  responseBody,
-		Code:  response.StatusCode,
-		Error: nil,
-	}, nil
+	return "", nil
 }
