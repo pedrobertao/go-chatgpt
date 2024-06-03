@@ -8,10 +8,10 @@ import (
 	"net/http"
 )
 
-func (c *ChatGPT) Post(message string, model Models) (*DefaultResponse, error) {
+func (c *ChatGPT) Post(message string) (*DefaultResponse, error) {
 	url := fmt.Sprintf("%s%s", API_V1_URL, "/chat/completions")
 	data := map[string]interface{}{
-		"model": model,
+		"model": c.Model,
 		"messages": []map[string]string{
 			{"role": "user", "content": message},
 		},

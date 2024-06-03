@@ -21,7 +21,7 @@ func main() {
 
 	res, err := chat.SayHello()
 	if err != nil {
-		fmt.Printf("BOOOM: %v \n", err)
+		fmt.Printf("Ops..: %v \n", err)
 		os.Exit(1)
 	}
 
