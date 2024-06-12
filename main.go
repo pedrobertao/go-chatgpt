@@ -27,8 +27,9 @@ func main() {
 	}
 	fmt.Println(res)
 
+	fmt.Println("=================")
 	// Example Promtp
-	res, err = chat.SendPrompt("Tell me the story of golang")
+	res, err = chat.SendPrompt("Tell me the story of golang with 200 characters")
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
