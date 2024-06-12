@@ -22,7 +22,7 @@ func main() {
 	// Example Test
 	res, err := chat.SayHello()
 	if err != nil {
-		fmt.Printf("Ops..: %v \n", err)
+		fmt.Println(err)
 		os.Exit(1)
 	}
 	fmt.Println(res)
