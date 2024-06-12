@@ -19,12 +19,21 @@ func main() {
 		Model:   chat.GPT_35_TURBO,
 	}
 
+	// Example Test
 	res, err := chat.SayHello()
 	if err != nil {
 		fmt.Printf("Ops..: %v \n", err)
 		os.Exit(1)
 	}
-
 	fmt.Println(res)
+
+	// Example Promtp
+	res, err = chat.SendPrompt("Tell me the story of golang")
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	fmt.Println(res)
+
 	os.Exit(0)
 }
